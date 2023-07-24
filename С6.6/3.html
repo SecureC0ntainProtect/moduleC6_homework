@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Чат с отправкой сообщений и геолокацией</title>
+  <style>
+    #chatWindow {
+      height: 300px;
+      overflow-y: scroll;
+      border: 1px solid #ccc;
+      padding: 10px;
+    }
+
+    #messageInput {
+      width: 70%;
+    }
+  </style>
+</head>
+<body>
+  <h1>Чат</h1>
+  <div id="chatWindow"></div>
+  <input type="text" id="messageInput" placeholder="Введите сообщение">
+  <button id="sendButton">Отправить</button>
+  <button id="locationButton">Геолокация</button>
+
+  <script>
+    const chatWindow = document.getElementById('chatWindow');
+    const messageInput = document.getElementById('messageInput');
+    const sendButton = document.getElementById('sendButton');
+    const locationButton = document.getElementById('locationButton');
+    let socket;
+
+    // Функция для вывода сообщения в чат
+    function displayMessage(message) {
+      const messageElement = document.createElement('p');
+      messageElement.textContent = message;
+      chatWindow.appendChild(messageElement);
+    }
+
+    // Обработчик клика на кнопку "Отправить"
+    sendButton.addEventListener('click', function() {
+      const message = messageInput.value;
+      displayMessage('Вы: ' + message);
+
+      if (socket.readyState === WebSocket.OPEN) {
+        socket.send(message);
+      } else {
+        displayMessage('Ошибка: соединение с сервером закрыто');
+      }
+
+      // Очищаем поле ввода
+      messageInput.value = '';
+    });
+
+    // Обработчик клика на кнопку "Геолокация"
+    locationButton.addEventListener('click', function() {
+      if ('geolocation' in navigator) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+          const latitude = position.coords.latitude;
+          const longitude = position.coords.longitude;
+
+          const mapUrl = `https://www.openstreetmap.org/?mlat=${latitude}&mlon=${longitude}&zoom=15`;
+          displayMessage('Вы отправили геолокацию: ' + mapUrl);
+
+          if (socket.readyState === WebSocket.OPEN) {
+            socket.send(mapUrl);
+          }
+        }, function(error) {
+          displayMessage('Ошибка получения геолокации: ' + error.message);
+        });
+      } else {
+        displayMessage('Геолокация не поддерживается вашим браузером');
+      }
+    });
+
+    // Установка соединения с WebSocket сервером
+    socket = new WebSocket('wss://echo-ws-service.herokuapp.com');
+
+    // Обработчик открытия соединения
+    socket.addEventListener('open', function(event) {
+      displayMessage('Соединение установлено');
+    });
+
+    // Обработчик получения сообщений от сервера
+    socket.addEventListener('message', function(event) {
+      const message = event.data;
+      displayMessage('Эхо-сервер: ' + message);
+    });
+
+    // Обработчик закрытия соединения
+    socket.addEventListener('close', function(event) {
+      displayMessage('Соединение закрыто');
+    });
+
+    // Обработчик ошибки соединения
+    socket.addEventListener('error', function(event) {
+      displayMessage('Произошла ошибка соединения');
+    });
+  </script>
+</body>
+</html>

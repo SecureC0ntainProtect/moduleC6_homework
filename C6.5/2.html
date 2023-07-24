@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Кнопка с выводом данных о размерах экрана</title>
+  <style>
+    .size-button {
+      display: inline-block;
+      padding: 10px;
+      background-color: #f5f5f5;
+      border: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <button id="sizeButton" class="size-button">Получить размер экрана</button>
+
+  <script>
+    document.getElementById('sizeButton').addEventListener('click', function() {
+      let screenWidth = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+      let screenHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+
+      let message = 'Ширина экрана: ' + screenWidth + 'px\nВысота экрана: ' + screenHeight + 'px';
+      alert(message);
+    });
+  </script>
+</body>
+</html>
